@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8' />
+    <title>Fightinggame.community</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.46.0/mapbox-gl.js'></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.46.0/mapbox-gl.css' rel='stylesheet' />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      #submit {
+        position: absolute;
+        top: 0;
+        padding: 10px;
+        z-index: 1000;
+      }
+
+      #map {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+      }
+
+      .contact {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+
+  <div id='submit'>
+      <div><a href="https://twitter.com/messages/compose?recipient_id=84557509&ref_src=twsrc%5Etfw" class="contact twitter-dm-button" data-size="large" data-screen-name="@QuoraUK" data-show-count="false">Message @QuoraUK</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script></div>
+        <div><a href="https://goo.gl/forms/Td0wGMqN9zUewyYB3"><button type="button" class="contact btn btn-default">submit your fgc</button></a></div>
+  </div>
+  <div id='map'></div>
+  <script>
+  mapboxgl.accessToken = 'pk.eyJ1IjoicXVvcmF1ayIsImEiOiJjamUxcHNxdzExbmphMnhwOW8zMHV5ZmQxIn0.zJdXQSrVdgmYsg9xitYEzw';
+  var map = new mapboxgl.Map({
+    container: 'map', // container id
+    style: 'mapbox://styles/mapbox/streets-v9', // stylesheet location
+    center: [-3.4350, 55.3781], // starting position [lng, lat]
+    zoom: 5 // starting zoom
+  });
+
+  map.on('load', function() {
+    map.addLayer({
+      'id': 'scenes',
+      'type': 'circle',
+      'source': {
+        'type': 'geojson',
+        'data': '/scenes',
+      },
+      paint: {
+        'circle-color': '#f27932',
+        'circle-radius': {
+          stops: [
+            [5, 7],
+            [8, 10]
+          ]
+        }
+      }
+    });
+    map.on('click', 'scenes', function(e) {
+      var features = map.queryRenderedFeatures(e.point, { layers: ['scenes'] })
+      if (features.length > 0) {
+        var properties = features[0].properties
+        new mapboxgl.Popup({closeOnClick: true})
+          .setLngLat(features[0].geometry.coordinates)
+          .setHTML(buildScenePopup(properties))
+          .addTo(map)
+      }
+    })
+    map.on('mouseenter', 'scenes', function (e) {
+      map.getCanvas().style.cursor = 'pointer';
+    });
+    map.on('mouseleave', 'scenes', function (e) {
+      map.getCanvas().style.cursor = '';
+    });
+
+    function buildScenePopup(properties) {
+      var discord = ''
+      var twitter = ''
+      var facebook = ''
+      if (properties.discord != "null") {
+        discord = `<a href="${properties.discord}" target="_blank"><h2>Discord</h2></a>`
+      }
+      if (properties.twitter != "null") {
+        twitter = `<a href="${properties.twitter}" target="_blank"><h2>Twitter</h2></a>`
+      }
+      if (properties.facebook != "null") {
+        facebook = `<a href="${properties.facebook}" target="_blank"><h2>Facebook</h2></a>`
+      }
+      return `<h1>${properties.name}</h1>
+              ${discord}
+              ${twitter}
+              ${facebook}`
+
+    }
+  });
+
+  </script>
+
+  </body>
+</html>
