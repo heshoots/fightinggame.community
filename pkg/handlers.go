@@ -1,16 +1,10 @@
-package main
+package pkg
 
 import (
-	"database/sql"
 	"fmt"
-	_ "github.com/lib/pq"
 	"log"
 	"net/http"
-	"os"
-	"time"
 )
-
-var db *sql.DB
 
 func getSceneGeoJSON(w http.ResponseWriter, r *http.Request) {
 	var geojson string
@@ -45,29 +39,4 @@ func getSceneGeoJSON(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, geojson)
 
-}
-
-func Logger(name string, route string, handler func(w http.ResponseWriter, r *http.Request)) func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
-		handler(w, r)
-		end := time.Now()
-		log.Println(name, route, end.Sub(start))
-	}
-}
-
-func main() {
-	var err error
-	connStr := os.Getenv("DB_CONN")
-	db, err = sql.Open("postgres", connStr)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = db.Ping()
-	if err != nil {
-		panic(err)
-	}
-	http.HandleFunc("/scenes", Logger("getSceneGeoJSON", "/scenes", getSceneGeoJSON))
-	http.Handle("/", http.FileServer(http.Dir("./static")))
-	http.ListenAndServe(":3000", nil)
 }
